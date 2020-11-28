@@ -7,15 +7,15 @@ type MessageSource string
 const (
 	// PlayerSource indicates that a message came from a player, e.g.
 	// a chat message.
-	PlayerSource MessageSource = "player"
+	PlayerSource MessageSource = "Player"
 	// ServerSource indicates that a message came from the server,
 	// such as when a player joins.
-	ServerSource MessageSource = "server"
+	ServerSource MessageSource = "Server"
 )
 
 // MinecraftMessage represents a message from Minecraft to be sent to Discord.
 type MinecraftMessage struct {
-	Username string        `json:"user_name"`
-	Content  string        `json:"message_content"`
-	Source   MessageSource `json:"message_source"`
+	Username string        `json:"name"`
+	Content  string        `json:"content"`
+	Source   MessageSource `json:"source"`
 }

@@ -36,7 +36,7 @@ func listen(ch chan *dolphin.MinecraftMessage, log *waterlog.WaterLog, opts Opti
 		log.Debugf("Sending a message from Minecraft: %+v\n", message)
 
 		// Create our message body
-		addr := fmt.Sprintf("http://%s:%d", opts.Hostname, opts.Port)
+		addr := fmt.Sprintf("http://%s:%d/message", opts.Hostname, opts.Port)
 		body, err := json.Marshal(message)
 		if err != nil {
 			log.Errorf("Error building JSON body from a message: %s\n", err)
