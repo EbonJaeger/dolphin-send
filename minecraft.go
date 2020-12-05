@@ -62,6 +62,8 @@ func (w *MinecraftWatcher) Watch(c chan<- *MinecraftMessage) {
 			w.log.Fatalf("Error trying to tail log file: %s\n", tailErr.Error())
 		}
 
+		w.log.Infoln("Log watcher started and waiting for lines")
+
 		for {
 			if line := <-w.tail.Lines; line != nil {
 				if msg := w.ParseLine(line.Text); msg != nil {

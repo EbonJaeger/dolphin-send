@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 
 	"github.com/DataDrake/waterlog"
@@ -25,6 +26,7 @@ var Version string
 type Options struct {
 	Debug    bool   `long:"debug" description:"Print additional debugging messages"`
 	Hostname string `short:"a" long:"address" description:"Set the hostname to send Minecraft messages to" required:"true"`
+	Keywords string `short:"k" long:"keywords" description:"A list of custom death keywords to look for, separated by commas"`
 	Port     int    `short:"p" long:"port" description:"Set the port of the receiving server" required:"true"`
 	Log      string `short:"l" long:"log" description:"Set the path to the server log to watch" required:"true"`
 	Version  bool   `short:"v" long:"version" description:"Prints version information and exits"`
@@ -80,8 +82,11 @@ func main() {
 		log.SetLevel(level.Info)
 	}
 
+	keywords := strings.Split(opts.Keywords, ",")
+	log.Infof("Using custom death keywords: [%s]\n", strings.Join(keywords, ", "))
+
 	// Set up the Minecraft log watcher
-	watcher := dolphin.NewWatcher(opts.Log, log, make([]string, 0))
+	watcher := dolphin.NewWatcher(opts.Log, log, keywords)
 	ch := make(chan *dolphin.MinecraftMessage)
 	go watcher.Watch(ch)
 	go listen(ch, log, opts)

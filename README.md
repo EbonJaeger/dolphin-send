@@ -23,11 +23,12 @@ Coming soon!
 Options:
 
 ```
--a, --address - The address of the listening server to send to
-    --debug   - Print additional debug lines to stdout
--h, --help    - Print the help message
--l, --log     - The location of the log file to read
--p, --port    - The port number of the listening server
+-a, --address  - The address of the listening server to send to
+    --debug    - Print additional debug lines to stdout
+-h, --help     - Print the help message
+-k, --keywords - Comma-separated list of words to use as additional death keywords to look for
+-l, --log      - The location of the log file to read
+-p, --port     - The port number of the listening server
 ```
 
 ## License
