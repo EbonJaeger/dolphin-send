@@ -12,7 +12,7 @@ To build the project, run `make`. To check the project and run tests, run `make 
 
 ## Installation
 
-Coming soon!
+You can install the latest release without cloning and building by using `go get github.com/EbonJaeger/dolphin-send`. If you clone the project and want to install it that way, you can run `make install` which just runs `go install ./cmd/dolphin-send`.
 
 ## Usage
 
