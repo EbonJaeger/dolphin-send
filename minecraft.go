@@ -124,10 +124,7 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 			Source:   PlayerSource,
 			UUID:     w.uuidCache[username],
 		}
-	}
-
-	// Check for player join or leave
-	if strings.Contains(line, "joined the game") || strings.Contains(line, "left the game") {
+	} else if strings.Contains(line, "joined the game") || strings.Contains(line, "left the game") {
 		// Remove from UUID cache when a player leaves
 		if strings.Contains(line, "left the game") {
 			name := strings.Fields(line)[0]
@@ -138,46 +135,36 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 			Content:  line,
 			Source:   ServerSource,
 		}
-	}
-
-	// Check if the line is an advancement message
-	if isAdvancement(line) {
+	} else if isAdvancement(line) {
 		return &MinecraftMessage{
 			Username: "",
 			Content:  fmt.Sprintf(":partying_face: %s", line),
 			Source:   ServerSource,
 		}
-	}
-
-	// Check if the line is a death message
-	for _, word := range w.deathKeywords {
-		if strings.Contains(line, word) && line != "Found that the dragon has been killed in this world already." {
-			return &MinecraftMessage{
-				Username: "",
-				Content:  fmt.Sprintf(":skull: %s", line),
-				Source:   ServerSource,
-			}
-		}
-	}
-
-	// Check if the server just finished starting
-	if strings.HasPrefix(line, "Done (") {
+	} else if strings.HasPrefix(line, "Done (") {
 		return &MinecraftMessage{
 			Username: "",
 			Content:  ":white_check_mark: Server has started",
 			Source:   ServerSource,
 		}
-	}
-
-	// Check if the server is shutting down
-	if strings.HasPrefix(line, "Stopping the server") {
+	} else if strings.HasPrefix(line, "Stopping the server") {
 		return &MinecraftMessage{
 			Username: "",
 			Content:  ":x: Server is shutting down",
 			Source:   ServerSource,
 		}
+	} else {
+		// Check if the line is a death message
+		for _, word := range w.deathKeywords {
+			if strings.Contains(line, word) && line != "Found that the dragon has been killed in this world already." {
+				return &MinecraftMessage{
+					Username: "",
+					Content:  fmt.Sprintf(":skull: %s", line),
+					Source:   ServerSource,
+				}
+			}
+		}
 	}
-
 	// Doesn't match anything we care about
 	return nil
 }
