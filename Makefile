@@ -1,11 +1,11 @@
 PKGNAME=dolphin-send
 MODULE=github.com/EbonJaeger/dolphin-send
-VERSION="1.0.0"
+VERSION="1.1.0"
 
 GO?=go
 GOFLAGS?=
-GOOS?=linux
-GOARCH?=amd64
+GOOS?=
+GOARCH?=
 
 GOSRC!=find . -name '*.go'
 GOSRC+=go.mod go.sum
