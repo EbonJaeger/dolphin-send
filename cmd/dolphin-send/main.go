@@ -82,8 +82,11 @@ func main() {
 		log.SetLevel(level.Info)
 	}
 
-	keywords := strings.Split(opts.Keywords, ",")
-	log.Infof("Using custom death keywords: [%s]\n", strings.Join(keywords, ", "))
+	keywords := make([]string, 0)
+	if opts.Keywords != "" {
+		keywords = strings.Split(opts.Keywords, ",")
+		log.Infof("Using custom death keywords: [%s]\n", strings.Join(keywords, ", "))
+	}
 
 	// Set up the Minecraft log watcher
 	watcher := dolphin.NewWatcher(opts.Log, log, keywords)

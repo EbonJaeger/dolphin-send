@@ -18,4 +18,5 @@ type MinecraftMessage struct {
 	Username string        `json:"name"`
 	Content  string        `json:"content"`
 	Source   MessageSource `json:"source"`
+	UUID     string        `json:"uuid"`
 }
