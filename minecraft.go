@@ -14,6 +14,7 @@ import (
 type MinecraftWatcher struct {
 	path          string
 	deathKeywords []string
+	uuidCache     map[string]string
 	log           *waterlog.WaterLog
 	tail          *tail.Tail
 }
@@ -31,6 +32,7 @@ func NewWatcher(path string, logger *waterlog.WaterLog, customDeathKeywords []st
 		path:          path,
 		log:           logger,
 		deathKeywords: deathKeywords,
+		uuidCache:     make(map[string]string),
 	}
 }
 
@@ -39,6 +41,13 @@ func (w *MinecraftWatcher) Close() error {
 	err := w.tail.Stop()
 	w.tail.Cleanup()
 	return err
+}
+
+// GetUUID returns a UUID if present in the cache. See docs for Go maps.
+// This is only meant to be used as a testing helper function.
+func (w MinecraftWatcher) GetUUID(name string) (uuid string, ok bool) {
+	uuid, ok = w.uuidCache[name]
+	return
 }
 
 // Watch watches a log file for changes and sends Minecraft messages
@@ -93,6 +102,15 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 		return nil
 	}
 
+	// Check if the message is an auth message
+	if strings.HasPrefix(line, "UUID of player") {
+		parts := strings.Split(line, " ")
+		name := parts[3]
+		uuid := parts[5]
+		w.uuidCache[name] = uuid
+		return nil
+	}
+
 	// Check if the line is a chat message
 	if strings.HasPrefix(line, "<") {
 		// Split the message into parts
@@ -104,11 +122,17 @@ func (w *MinecraftWatcher) ParseLine(line string) *MinecraftMessage {
 			Username: username,
 			Content:  message,
 			Source:   PlayerSource,
+			UUID:     w.uuidCache[username],
 		}
 	}
 
 	// Check for player join or leave
 	if strings.Contains(line, "joined the game") || strings.Contains(line, "left the game") {
+		// Remove from UUID cache when a player leaves
+		if strings.Contains(line, "left the game") {
+			name := strings.Fields(line)[0]
+			delete(w.uuidCache, name)
+		}
 		return &MinecraftMessage{
 			Username: "",
 			Content:  line,
@@ -165,24 +189,15 @@ func isAdvancement(line string) bool {
 }
 
 // trimPrefix trims the timestamp and thread prefix from incoming messages
-// from the Minecraft server. We have to check for multiple prefixes because
-// different server softwares change logging output slightly. Returns an empty
-// string if nothing is matched.
+// from the Minecraft server.
 func trimPrefix(line string) string {
 	// Some server plugins may log abnormal lines
 	if !strings.HasPrefix(line, "[") || len(line) < 11 {
 		return ""
 	}
+
+	start := strings.Index(line, "]: ") + 3
+
 	// Trim the time prefix
-	line = line[11:]
-	// Trim the thread prefix
-	if strings.Contains(line, "[Server thread/INFO]: ") {
-		// Line is either a server message or a vanilla chat message
-		return line[22:]
-	} else if strings.Contains(line, "[Async Chat Thread") {
-		// Line is a chat message from a Spigot or Paper server
-		return line[31:]
-	}
-	// Doesn't match anything we know of
-	return ""
+	return line[start:]
 }

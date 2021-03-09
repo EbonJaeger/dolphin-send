@@ -6,6 +6,9 @@ import (
 
 var watcher = MinecraftWatcher{
 	deathKeywords: make([]string, 0),
+	uuidCache: map[string]string{
+		"TestUser": "7f7c909b-24f1-49a4-817f-baa4f4973980",
+	},
 }
 
 func TestParseVanillaChatLine(t *testing.T) {
@@ -15,6 +18,7 @@ func TestParseVanillaChatLine(t *testing.T) {
 		Username: "TestUser",
 		Content:  "Sending a chat message",
 		Source:   PlayerSource,
+		UUID:     "7f7c909b-24f1-49a4-817f-baa4f4973980",
 	}
 	// When
 	actual := watcher.ParseLine(input)
@@ -27,6 +31,9 @@ func TestParseVanillaChatLine(t *testing.T) {
 	}
 	if actual.Source != expected.Source {
 		t.Errorf("Parsing chat line got incorrect source, got: %s, expected: %s", actual.Source, expected.Source)
+	}
+	if actual.UUID != expected.UUID {
+		t.Errorf("Parsing chat line got incorrect UUID, got: %s, expected %s", actual.UUID, expected.UUID)
 	}
 }
 
@@ -37,6 +44,7 @@ func TestParseNonVanillaChatLine(t *testing.T) {
 		Username: "TestUser",
 		Content:  "Sending a chat message",
 		Source:   PlayerSource,
+		UUID:     "7f7c909b-24f1-49a4-817f-baa4f4973980",
 	}
 	// When
 	actual := watcher.ParseLine(input)
@@ -49,6 +57,9 @@ func TestParseNonVanillaChatLine(t *testing.T) {
 	}
 	if actual.Source != expected.Source {
 		t.Errorf("Parsing chat line got incorrect source, got: %s, expected: %s", actual.Source, expected.Source)
+	}
+	if actual.UUID != expected.UUID {
+		t.Errorf("Parsing chat line got incorrect UUID, got: %s, expected %s", actual.UUID, expected.UUID)
 	}
 }
 
@@ -93,6 +104,9 @@ func TestParseLeaveLine(t *testing.T) {
 	}
 	if actual.Source != expected.Source {
 		t.Errorf("Parsing chat line got incorrect source, got: %s, expected: %s", actual.Source, expected.Source)
+	}
+	if uuid, ok := watcher.GetUUID("TestUser"); ok && uuid != "" {
+		t.Error("Player UUID still present in cache after player left")
 	}
 }
 
@@ -194,5 +208,21 @@ func TestIgnoreVillagerDeath(t *testing.T) {
 	// Then
 	if result != nil {
 		t.Errorf("Parsing line failed to ignore villager death message, got: %s", result)
+	}
+}
+
+func TestAddsUUID(t *testing.T) {
+	// Given
+	input := "[19:54:56] [User Authenticator #1/INFO]: UUID of player Bob is 7f7c909b-24f1-49a4-817f-baa4f4973980"
+
+	// When
+	result := watcher.ParseLine(input)
+
+	// Then
+	if result != nil {
+		t.Errorf("Parsing line returned a message for an authentication line")
+	}
+	if uuid, ok := watcher.GetUUID("Bob"); !ok || uuid != "7f7c909b-24f1-49a4-817f-baa4f4973980" {
+		t.Error("Player UUID not present in cache after auth message")
 	}
 }
